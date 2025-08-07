@@ -1,8 +1,11 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import joblib
 import pandas as pd
+import os
 
 app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
 model = joblib.load("rf_model.pkl")
 
 scaler_params = {
@@ -231,6 +234,15 @@ def predict():
             "error": f"Error processing prediction: {str(e)}"
         }), 400
 
+@app.route("/", methods=["GET"])
+def health_check():
+    """Health check endpoint for Fly.io"""
+    return jsonify({
+        "status": "healthy",
+        "service": "predictor-api",
+        "version": "1.0.0"
+    })
+
 @app.route("/predict_raw", methods=["POST"])
 def predict_raw():
     try:
@@ -246,4 +258,5 @@ def predict_raw():
         return jsonify({"error": str(e)}), 400
 
 if __name__ == "__main__":
-    app.run()
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=False)
