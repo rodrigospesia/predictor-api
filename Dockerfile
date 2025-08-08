@@ -4,10 +4,13 @@ FROM python:3.11-slim
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies needed for numpy/pandas
+# Install system dependencies needed for numpy/pandas and Git LFS
 RUN apt-get update && apt-get install -y \
     gcc \
     g++ \
+    git \
+    git-lfs \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first for better Docker layer caching
@@ -18,6 +21,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application files
 COPY . .
+
+# Initialize Git LFS and pull large files
+RUN git lfs install && git lfs pull || echo "Git LFS pull failed, will download at runtime"
 
 # Create a non-root user for security
 RUN adduser --disabled-password --gecos '' appuser && chown -R appuser /app

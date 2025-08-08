@@ -251,7 +251,7 @@ def predict_raw():
         prediction = model.predict(df)[0]
         probability = model.predict_proba(df)[0][1]
         return jsonify({
-            "mal_pagador": bool(prediction),
+            "mal_pagador": probability > 0.5,
             "probabilidad": round(probability, 4)
         })
     except Exception as e:
